@@ -1,0 +1,4 @@
+python3  train_student.py --path_t ./save/models/vgg11_cifar100_lr_0.05_decay_0.0005_trial_0/vgg11_last.pth --distill kd --model_s vgg8 -r 0.1 -a 0.9 -b 0 --trial 2
+python3  train_student.py --path_t ./save/models/vgg13_cifar100_lr_0.05_decay_0.0005_trial_0/vgg13_last.pth --distill kd --model_s vgg8 -r 0.1 -a 0.9 -b 0 --trial 2
+python3  train_student.py --path_t ./save/models/vgg16_cifar100_lr_0.05_decay_0.0005_trial_0/vgg16_last.pth --distill kd --model_s vgg8 -r 0.1 -a 0.9 -b 0 --trial 2
+python3  train_student.py --path_t ./save/models/vgg19_cifar100_lr_0.05_decay_0.0005_trial_0/vgg19_last.pth --distill kd --model_s vgg8 -r 0.1 -a 0.9 -b 0 --trial 2

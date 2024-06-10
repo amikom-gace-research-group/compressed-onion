@@ -19,16 +19,8 @@ std = {
 
 
 def get_data_folder():
-    """
-    return server-dependent path to store the data
-    """
-    hostname = socket.gethostname()
-    if hostname.startswith('visiongpu'):
-        data_folder = '/data/vision/phillipi/rep-learn/datasets'
-    elif hostname.startswith('yonglong-home'):
-        data_folder = '/home/yonglong/Data/data'
-    else:
-        data_folder = './data/'
+
+    data_folder = './data/cifar100/'
 
     if not os.path.isdir(data_folder):
         os.makedirs(data_folder)

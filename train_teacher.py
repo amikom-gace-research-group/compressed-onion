@@ -18,8 +18,7 @@ from dataset.cifar100 import get_cifar100_dataloaders
 from helper.util import adjust_learning_rate, accuracy, AverageMeter
 from helper.loops import train_vanilla as train, validate
 
-
-
+time_list = []
 
 def parse_option():
 

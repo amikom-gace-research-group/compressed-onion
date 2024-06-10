@@ -5,25 +5,24 @@ import torchvision.models as models
 from torch import nn
 from torch import optim
 from torch.nn.utils import prune
-from models.vgg import vgg8, vgg11, vgg13, vgg16, vgg19
+
 import os
 
-model_name = 'vgg13' #diganti manual
-model_path = f'save/models/vgg/{model_name}_cifar100_lr_0.05_decay_0.0005_trial_0/{model_name}_last.pth'
-prune_path = f'./save/models/vgg/pruned/{model_name}_cifar100_lr_0.05_decay_0.0005_trial_0/'
+from models import model_dict
+
+model_name = 'vgg16' #diganti manual
+teacher_path = f'save/models/{model_name}_cifar100_lr_0.05_decay_0.0005_trial_0/{model_name}_last.pth'
+prune_path = f'./save/models/pruned/{model_name}_cifar100_lr_0.05_decay_0.0005_trial_0/'
 
 if not os.path.isdir(prune_path):
     os.makedirs(prune_path)
 
-func_lib = {'vgg11' : vgg11(),
-            'vgg13' : vgg13(),
-            'vgg16' : vgg16(),
-            'vgg19' : vgg19()}
 # Model structure
-model = func_lib[model_name]
-model.state_dict(torch.load(model_path))
+model = model_dict[model_name](num_classes=100)
+model.state_dict(torch.load(teacher_path))
 
-model.to("cpu")  # Frequent crashes on GPU (GTX 950M), so set to CPU
+DEVICE = 'cuda' if torch.cuda.is_available() else 'cpu'
+model.to(DEVICE)  # Frequent crashes on GPU (GTX 950M), so set to CPU
 print('model loaded!')
 
 
@@ -64,7 +63,11 @@ print('model pruned!')
 print(f'Total sparsity: {100 * (1 - total_nonzero_weights / total_weights):.2f}%')
 
 # Save model structure and weights
-torch.save(model, f'./save/models/vgg/pruned/{model_name}_cifar100_lr_0.05_decay_0.0005_trial_0/{model_name}_last.pth')
+state = {
+    'model' : model.state_dict()
+}
+
+torch.save(state, f'{prune_path}/{model_name}_last.pth')
 
 # for name, module in model.named_modules():
 #     if isinstance(module, nn.Conv2d) or isinstance(module, nn.Linear):
