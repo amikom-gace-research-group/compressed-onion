@@ -9,6 +9,7 @@ from torch.nn.utils import prune
 import os
 
 from models import model_dict
+import CONFIG
 
 model_name = 'vgg16' #diganti manual
 teacher_path = f'save/models/{model_name}_cifar100_lr_0.05_decay_0.0005_trial_0/{model_name}_last.pth'
@@ -21,8 +22,7 @@ if not os.path.isdir(prune_path):
 model = model_dict[model_name](num_classes=100)
 model.state_dict(torch.load(teacher_path))
 
-DEVICE = 'cuda' if torch.cuda.is_available() else 'cpu'
-model.to(DEVICE)  # Frequent crashes on GPU (GTX 950M), so set to CPU
+model.to(CONFIG.DEVICE)  # Frequent crashes on GPU (GTX 950M), so set to CPU
 print('model loaded!')
 
 
