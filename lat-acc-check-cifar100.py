@@ -45,9 +45,9 @@ def inference(model, test_set, opt):
     end = datetime.now()
 
     # calculate total time
-    time_delta = round((end - start).total_seconds(), 2)
+    time_delta = round((end - start).total_seconds(), 3)
     print(f'Total inference time\t: {time_delta} seconds')
-    print(f'Latency per image\t: {round(time_delta / 100, 2)} seconds')
+    print(f'Latency per image\t: {round(time_delta / 100, 3)} seconds')
     
 def main(opt):
     print(f'model: {get_teacher_name(opt.path)}')
