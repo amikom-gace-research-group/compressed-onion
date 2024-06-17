@@ -14,7 +14,7 @@ import argparse
 
 def get_teacher_name(model_path):
     """parse teacher name"""
-    segments = model_path.split('/')[-2].split('_')
+    segments = model_path.split('/')[-1].split('_')
     if segments[0] != 'wrn':
         return segments[0]
     else:
@@ -50,11 +50,13 @@ def inference(model, test_set, opt):
     print(f'Latency per image\t: {round(time_delta / 100, 2)} seconds')
     
 def main(opt):
+    print(f'model: {get_teacher_name(opt.path)}')
+    
     test_loader, _ = get_cifar100_dataloaders_test()
     model = load_teacher(opt.path, 100)
     
     inference(model, test_loader, opt)
-
+    
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
     parser.add_argument('--path', type=str, default=None, help='Model path to evaluate')
