@@ -12,6 +12,9 @@ import torch.backends.cudnn as cudnn
 from datetime import datetime
 import argparse
 
+import numpy as np
+import os
+
 def get_teacher_name(model_path):
     """parse teacher name"""
     segments = model_path.split('/')[-1].split('_')
@@ -30,7 +33,7 @@ def load_teacher(model_path, n_cls):
     
     return model
 
-def inference(model, test_set, opt):   
+def inference(model, test_set, opt, n_data):   
     criterion = nn.CrossEntropyLoss()
 
     if torch.cuda.is_available():
@@ -46,21 +49,48 @@ def inference(model, test_set, opt):
 
     # calculate total time
     time_delta = round((end - start).total_seconds(), 3)
-    print(f'Total inference time\t: {time_delta} seconds')
-    print(f'Latency per image\t: {round(time_delta / 100, 3)} seconds')
+    print(f'Total inference time\t: {time_delta} seconds') #in seconds
+    print(f'Latency per image\t: {round((time_delta/ n_data)*1000, 4)} ms') #in miliseconds
+    
+    return time_delta
+    
+    
     
 def main(opt):
-    print(f'model: {get_teacher_name(opt.path)}')
+    time_arr = []
     
-    test_loader, _ = get_cifar100_dataloaders_test()
+    model_name = get_teacher_name(opt.path)
+    
+    print(f'model: {model_name}')
+    
+    test_loader, n_data = get_cifar100_dataloaders_test()
     model = load_teacher(opt.path, 100)
     
-    inference(model, test_loader, opt)
+    for i in range(opt.iter):
+        time_data = inference(model, test_loader, opt, n_data)
+        
+        time_arr.append([int(i), time_data])
+    
+    print(f'Total images\t\t: {n_data}')
+    
+    if opt.save != '-':
+    
+        if not os.path.isdir(f'./benchmark/result/{model_name}'):
+            os.makedirs(f'./benchmark/result/{model_name}')
+        
+        np.savetxt(f'./benchmark/result/{model_name}/{model_name}_{opt.save}.csv',
+                time_arr,
+                delimiter=',',
+                fmt='% s')
+    else:
+        print(time_arr)  
     
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
     parser.add_argument('--path', type=str, default=None, help='Model path to evaluate')
-    parser.add_argument('--print_freq', type=int, default=10, help='print frequency')
+    parser.add_argument('--print_freq', type=int, default=100, help='print frequency')
+    parser.add_argument('--iter', type=int, default=30, help='Number of Itteration to execute')
+    parser.add_argument('--save', type=str, default='-', help='File name for storing benchmark data, dafault is unsaved')
 
     opt = parser.parse_args()
     print(opt)

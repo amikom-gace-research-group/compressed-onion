@@ -11,7 +11,7 @@ import os
 from models import model_dict
 import CONFIG
 
-model_name = 'vgg16' #diganti manual
+model_name = 'vgg8' #diganti manual
 teacher_path = f'save/models/{model_name}_cifar100_lr_0.05_decay_0.0005_trial_0/{model_name}_last.pth'
 prune_path = f'./save/models/pruned/{model_name}_cifar100_lr_0.05_decay_0.0005_trial_0/'
 

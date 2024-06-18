@@ -227,7 +227,7 @@ def get_cifar100_dataloaders_test(batch_size=128, num_workers=8, k=4096, mode='e
                                  train=False,
                                  transform=test_transform)
     
-    n_data = test_set
+    n_data = len(test_set)
     
     test_loader = DataLoader(test_set,
                              batch_size=int(batch_size/2),
