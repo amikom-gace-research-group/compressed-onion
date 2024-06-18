@@ -67,6 +67,8 @@ def main(opt):
     model = load_teacher(opt.path, 100)
     
     for i in range(opt.iter):
+        print(f'loop {i}')
+        
         time_data = inference(model, test_loader, opt, n_data)
         
         time_arr.append([int(i), time_data])
