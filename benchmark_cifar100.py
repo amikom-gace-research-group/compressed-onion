@@ -15,19 +15,24 @@ import argparse
 import numpy as np
 import os
 
+import psutil
+import pandas as pd
+
 # Get model name from the file name
 def get_teacher_name(model_path):
     """parse teacher name"""
-    segments = model_path.split('/')[-1].split('_')
-    if segments[0] != 'wrn':
-        return segments[0]
+    model_segments = model_path.split('/')[-1].split('_')
+    version_segment = model_path.split('/')[-2].split('_')
+    
+    if model_segments[0] != 'wrn':
+        return model_segments[0], version_segment[-1]
     else:
-        return segments[0] + '_' + segments[1] + '_' + segments[2]
+        return model_segments[0] + '_' + model_segments[1] + '_' + model_segments[2], version_segment[-1]
 
 #Loads weight with necessary model
 def load_teacher(model_path, n_cls):
     print('==> loading teacher model')
-    model_t = get_teacher_name(model_path)
+    model_t = get_teacher_name(model_path)[0]
     model = model_dict[model_t](num_classes=n_cls)
     model.load_state_dict(torch.load(model_path)['model'])
     model.to('cuda' if torch.cuda.is_available() else 'cpu')
@@ -61,7 +66,12 @@ def inference(model, test_set, opt, n_data):
     
     
 def main(opt):
-    meta_arr = []
+    latency_list = []
+    acc_list = []
+    cpu_percent_list = []
+    mem_percent_list = []
+    cpu_freq_list = []
+    mem_use_list = []
     
     model_name = get_teacher_name(opt.path)
     
@@ -75,28 +85,44 @@ def main(opt):
         
         latency_data, acc_data = inference(model, test_loader, opt, n_data)
         
-        meta_arr.append([latency_data, round(acc_data, 3)])
+        cpu_percent_list.append(psutil.cpu_percent(interval=None))
+        mem_percent_list.append(psutil.virtual_memory().percent)
+        
+        cpu_freq_list.append(psutil.cpu_freq().current)
+        mem_use_list.append(round(((psutil.virtual_memory().available) / 1024 ** 3), 3))
+        
+        latency_list.append(latency_data)
+        acc_list.append(round(acc_data, 3))
     
     print(f'Total images\t\t: {n_data}')
     
-    if opt.save != '-':
+    data = {
+        'latency' : latency_list,
+        'accuracy' : acc_list,
+        'cpu_percent' : cpu_percent_list,
+        'cpu_freq' : cpu_freq_list,
+        'mem_percent' : mem_percent_list,
+        'mem_use_MB' : mem_use_list
+    }
     
-        if not os.path.isdir(f'./benchmark/result/{model_name}'):
-            os.makedirs(f'./benchmark/result/{model_name}')
+    df = pd.DataFrame(data)
+    
+    if opt.save == True:
+    
+        if not os.path.isdir(f'./benchmark/result/{model_name[0]}'):
+            os.makedirs(f'./benchmark/result/{model_name[0]}')
         
-        np.savetxt(f'./benchmark/result/{model_name}/{model_name}_{opt.save}.csv',
-                meta_arr,
-                delimiter=',',
-                fmt='% s')
+        df.to_csv(f'./benchmark/result/{model_name[0]}/{model_name[0]}_{model_name[1]}.csv')
+        
     else:
-        print(meta_arr)  
+        print(df)  
     
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
     parser.add_argument('--path', type=str, default=None, help='Model path to evaluate')
     parser.add_argument('--print_freq', type=int, default=100, help='print frequency')
     parser.add_argument('--iter', type=int, default=60, help='Number of Itteration to execute')
-    parser.add_argument('--save', type=str, default='-', help='File name for storing benchmark data, dafault is unsaved')
+    parser.add_argument('--save', type=bool, default=False, help='True - False, default is unsaved')
 
     opt = parser.parse_args()
     print(opt)
