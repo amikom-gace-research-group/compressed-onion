@@ -87,20 +87,21 @@ def convert_to_sparse(model: nn.Module, layer_kind, sparse_layout, blocksize=Non
             
     return model
 
+def get_teacher_name(model_path):
+    """parse teacher name"""
+    model_segments = model_path.split('/')[-1].split('_')
+    version_segment = model_path.split('/')[-2].split('_')
+    
+    if model_segments[0] != 'wrn':
+        return model_segments[0], version_segment[-1]
+    else:
+        return model_segments[0] + '_' + model_segments[1] + '_' + model_segments[2], version_segment[-1]
 
 def main(args):
     
-    def get_teacher_name(model_path):
-        """parse teacher name"""
-        segments = model_path.split('/')[-1].split('_')
-        if segments[0] != 'wrn':
-            return segments[0]
-        else:
-            return segments[0] + '_' + segments[1] + '_' + segments[2]
-    
     print('==> loading teacher model')
-    model_t = get_teacher_name(args.path)
-    model_to_prune = model_dict[model_t](num_classes=100)
+    model_name = get_teacher_name(args.path)
+    model_to_prune = model_dict[model_name[0]](num_classes=100)
     model_to_prune.load_state_dict(torch.load(args.path)['model'])
     model_to_prune.to('cuda' if torch.cuda.is_available() else 'cpu')
     
@@ -131,7 +132,10 @@ def main(args):
     # else:
     #     sparse_model = convert_to_sparse(pruned_model, layer_kind, SPARSE_LAYOUT[args.sparse_layout])
     
-    save_model(pruned_model, 'state-dict', args.save_path)
+    if not os.path.isdir(f'./save/models/{model_name[0]}'):
+        os.makedirs(f'./save/models/{model_name[0]}')
+    
+    save_model(pruned_model, 'state-dict', f'./save/models/{model_name[0]}/{model_name[0]}_l{args.n}_{args.layer_kind}_{args.amount}_pruned.pth')
 
     print("DONE!")
 
@@ -140,12 +144,12 @@ if __name__ == '__main__':
     parser.add_argument("--path", required=True)
     parser.add_argument("--layer-kind", choices=list(LAYER_KINDS.keys()), required=True)
     parser.add_argument("--amount", type=float, required=True)
-    parser.add_argument("--n")
-    parser.add_argument("--dim")
-    parser.add_argument("--sparse-layout", choices=list(SPARSE_LAYOUT.keys()), required=True)
-    parser.add_argument("--save-path", required=True)
-    parser.add_argument("--blocksize", nargs="*", help="Set this for sparse_bsc and sparse_bsr", type=int)
-    parser.add_argument("--check-percentage", action="store_true")
+    parser.add_argument("--n", type=int, help="Regularization to choose", choices=[1, 2])
+    parser.add_argument("--dim", required=True, help="Pruning direction (channels, filters, etc..)")
+    #parser.add_argument("--sparse-layout", choices=list(SPARSE_LAYOUT.keys()), required=True)
+    #parser.add_argument("--save-path", required=True)
+    #parser.add_argument("--blocksize", nargs="*", help="Set this for sparse_bsc and sparse_bsr", type=int)
+    parser.add_argument("--check-percentage", action="store_true", default=True)
 
     args = parser.parse_args()
     print(args)
