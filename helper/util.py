@@ -3,6 +3,8 @@ from __future__ import print_function
 import torch
 import numpy as np
 
+import pathlib
+
 
 def adjust_learning_rate_new(epoch, optimizer, LUT):
     """
@@ -56,6 +58,27 @@ def accuracy(output, target, topk=(1,)):
             res.append(correct_k.mul_(100.0 / batch_size))
         return res
 
+def save_model(model, save_as, path):
+    def prepare_path(path: str):
+        split_path = path.split("/")
+        filename = split_path[-1]
+        folder_path = "/".join(split_path[:-1])
+
+        base = pathlib.Path(folder_path)
+        base.mkdir(parents=True, exist_ok=True)
+
+        return base / filename
+
+    state = {
+        'model' : model.state_dict()
+    }
+    
+    torch.save(
+        state if save_as == 'state-dict' else model,
+        prepare_path(path))
+        
+        # model.state_dict() if save_as == 'state-dict' else model,
+        # prepare_path(path))
 
 if __name__ == '__main__':
 

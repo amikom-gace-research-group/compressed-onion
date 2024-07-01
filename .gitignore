@@ -28,4 +28,5 @@ script/test/
 model_size_folder/
 
 benchmark/result/*
-!benchmark/result/.gitkeep
+
+EDA

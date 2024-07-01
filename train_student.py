@@ -26,7 +26,7 @@ from helper.util import adjust_learning_rate
 
 from distiller_zoo import DistillKL, HintLoss, Attention, Similarity, Correlation, VIDLoss, RKDLoss
 from distiller_zoo import PKT, ABLoss, FactorTransfer, KDSVD, FSP, NSTLoss
-from crd.criterion import CRDLoss
+from distiller_zoo.crd.criterion import CRDLoss
 
 from helper.loops import train_distill as train, validate
 from helper.pretrain import init
@@ -108,7 +108,7 @@ def parse_option():
 
     opt.model_t = get_teacher_name(opt.path_t)
 
-    opt.model_name = 'S:{}_T:{}_{}_{}_r:{}_a:{}_b:{}_{}'.format(opt.model_s, opt.model_t, opt.dataset, opt.distill,
+    opt.model_name = 'S-{}_T-{}_{}_{}_r-{}_a-{}_b-{}_{}'.format(opt.model_s, opt.model_t, opt.dataset, opt.distill,
                                                                 opt.gamma, opt.alpha, opt.beta, opt.trial)
 
     opt.tb_folder = os.path.join(opt.tb_path, opt.model_name)
@@ -124,7 +124,7 @@ def parse_option():
 
 def get_teacher_name(model_path):
     """parse teacher name"""
-    segments = model_path.split('/')[-2].split('_')
+    segments = model_path.split('/')[-1].split('_')
     if segments[0] != 'wrn':
         return segments[0]
     else:
