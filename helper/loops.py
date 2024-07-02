@@ -6,6 +6,8 @@ import torch
 
 from .util import AverageMeter, accuracy
 
+import CONFIG
+
 
 def train_vanilla(epoch, train_loader, model, criterion, optimizer, opt):
     """vanilla training"""
@@ -230,9 +232,12 @@ def validate(val_loader, model, criterion, opt):
         for idx, (input, target) in enumerate(val_loader):
 
             input = input.float()
-            if torch.cuda.is_available():
-                input = input.cuda()
-                target = target.cuda()
+            # if torch.cuda.is_available():
+            #     input = input.cuda()
+            #     target = target.cuda()
+            
+            input = input.to(CONFIG.DEVICE)
+            target = target.to(CONFIG.DEVICE)
 
             # compute output
             output = model(input)

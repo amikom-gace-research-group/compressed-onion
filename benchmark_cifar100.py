@@ -17,6 +17,8 @@ import os
 import psutil
 import pandas as pd
 
+import CONFIG
+
 # Get model name from the file name
 def get_teacher_name(model_path):
     """parse teacher name"""
@@ -35,7 +37,7 @@ def load_teacher(model_path, n_cls):
     model_t = get_teacher_name(model_path)[0]
     model = model_dict[model_t](num_classes=n_cls)
     model.load_state_dict(torch.load(model_path)['model'])
-    model.to('cuda' if torch.cuda.is_available() else 'cpu') #'cuda' if torch.cuda.is_available() else 'cpu' -> using cpu for experiment
+    model.to(CONFIG.DEVICE) #'cuda' if torch.cuda.is_available() else 'cpu' -> using cpu for experiment
     
     print('==> done')
     
@@ -44,10 +46,14 @@ def load_teacher(model_path, n_cls):
 def inference(model, test_set, opt, n_data):   
     criterion = nn.CrossEntropyLoss()
 
-    if torch.cuda.is_available():
-        model = model.cuda()
-        criterion = criterion.cuda()
-        cudnn.benchmark = True
+    # TODO: Change this code below and other to xxx.to(CONFIG.DEVICE)
+    # if torch.cuda.is_available():
+    #     model = model.cuda()
+    #     criterion = criterion.cuda()
+    #     cudnn.benchmark = True
+    
+    model = model.to(CONFIG.DEVICE)
+    criterion = criterion.to(CONFIG.DEVICE)
     
     start = datetime.now()
     
@@ -93,7 +99,7 @@ def main(opt):
         
         latency_data, acc_data = inference(model, test_loader, opt, n_data)
         
-        cpu_percent_list.append(round(p.cpu_percent(interval=None), 2))
+        cpu_percent_list.append(round(p.cpu_percent(interval=None)/psutil.cpu_count(), 2))
         mem_percent_list.append(round(p.memory_percent(), 2))
         
         # cpu_freq_list.append(round(p.cpu, 3))
@@ -151,4 +157,4 @@ if __name__ == "__main__":
     main(opt)
     
     print(f'Model Tested : {opt.path}')
-    print('Harware Used : {hardware}'.format(hardware='cuda' if torch.cuda.is_available() else 'cpu'))
+    print('Harware Used : {hardware}'.format(hardware=CONFIG.DEVICE))
