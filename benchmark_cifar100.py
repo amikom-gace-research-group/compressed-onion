@@ -25,7 +25,7 @@ def get_teacher_name(model_path):
     model_segments = model_path.split('/')[-1].split('_')
     
     if model_segments[-1][:-4] == 'pruned':
-        return model_segments[0], model_segments[-3], model_segments[-2],model_segments[-1][:-4]
+        return model_segments[0], model_segments[1],model_segments[-3], model_segments[-2],model_segments[-1][:-4]
     elif model_segments[0] == 'wrn':
         return model_segments[0] + '_' + model_segments[1] + '_' + model_segments[2], model_segments[-1]
     else:
@@ -137,7 +137,7 @@ def main(opt):
             os.makedirs(f'./benchmark/result/{model_name[0]}')
         
         if model_name[1] != 'last':
-            df.to_csv(f'./benchmark/result/{model_name[0]}/{model_name[0]}_{model_name[1]}_{model_name[2]}_{model_name[3]}.csv')
+            df.to_csv(f'./benchmark/result/{model_name[0]}/{model_name[0]}_{model_name[1]}_{model_name[2]}_{model_name[3]}_{model_name[4]}.csv')
         else:
             df.to_csv(f'./benchmark/result/{model_name[0]}/{model_name[0]}_{model_name[1]}.csv')
         
