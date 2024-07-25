@@ -34,9 +34,9 @@ def get_teacher_name(model_path):
 #Loads weight with necessary model
 def load_teacher(model_path, n_cls):
     print('==> loading teacher model')
-    model_t = get_teacher_name(model_path)[0]
-    model = model_dict[model_t](num_classes=n_cls)
-    model.load_state_dict(torch.load(model_path)['model'])
+    # model_t = get_teacher_name(model_path)[0]
+    # model = model_dict[model_t](num_classes=n_cls)
+    model=torch.load(model_path)['model']
     model.to(CONFIG.DEVICE) #'cuda' if torch.cuda.is_available() else 'cpu' -> using cpu for experiment
     
     print('==> done')
@@ -52,7 +52,8 @@ def inference(model, test_set, opt, n_data):
     #     criterion = criterion.cuda()
     #     cudnn.benchmark = True
     
-    model = model.to(CONFIG.DEVICE)
+    model.eval()
+    
     criterion = criterion.to(CONFIG.DEVICE)
     
     start = datetime.now()
@@ -80,10 +81,10 @@ def main(opt):
     mem_percent_list = []
     # cpu_freq_list = []
     mem_use_list = []
-    cuda_power_list = []
-    cuda_percent_list = []
-    cuda_freq_list = []
-    cuda_mem_list = []
+    # cuda_power_list = []
+    # cuda_percent_list = []
+    # cuda_freq_list = []
+    # cuda_mem_list = []
     
     
     
@@ -105,10 +106,10 @@ def main(opt):
         # cpu_freq_list.append(round(p.cpu, 3))
         mem_use_list.append(round(((p.memory_full_info().vms) / 1024 ** 3), 2)) # In MB
         
-        cuda_power_list.append(round(cuda.power_draw()/1000, 2)) # In mW, converted to Watts
-        cuda_percent_list.append(cuda.utilization()) # In %
-        cuda_mem_list.append(cuda.memory_usage()) # In %
-        cuda_freq_list.append(cuda.clock_rate()) # In Hz 
+        # cuda_power_list.append(round(cuda.power_draw()/1000, 2)) # In mW, converted to Watts
+        # cuda_percent_list.append(cuda.utilization()) # In %
+        # cuda_mem_list.append(cuda.memory_usage()) # In %
+        # cuda_freq_list.append(cuda.clock_rate()) # In Hz 
         
         latency_list.append(latency_data)
         acc_list.append(round(acc_data, 3))
@@ -123,10 +124,10 @@ def main(opt):
         # 'cpu_freq' : cpu_freq_list[1:],
         'mem_percent' : mem_percent_list[1:],
         'mem_use_MB' : mem_use_list[1:],
-        'gpu_percent' : cuda_percent_list[1:],
-        'gpu_freq' : cuda_freq_list[1:],
-        'gpu_mem_percent' : cuda_mem_list[1:],
-        'gpu_power_w' : cuda_power_list[1:]
+        # 'gpu_percent' : cuda_percent_list[1:],
+        # 'gpu_freq' : cuda_freq_list[1:],
+        # 'gpu_mem_percent' : cuda_mem_list[1:],
+        # 'gpu_power_w' : cuda_power_list[1:]
     }
     
     df = pd.DataFrame(data)

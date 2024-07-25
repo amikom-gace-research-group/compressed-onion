@@ -4,6 +4,7 @@ from torchsummary import summary
 import argparse
 
 from models import model_dict
+import CONFIG
 
 def get_teacher_name(model_path):
     """parse teacher name"""
@@ -17,10 +18,10 @@ def get_teacher_name(model_path):
     
 def main(args):
     print('==> loading teacher model')
-    model_name = get_teacher_name(args.path)
-    model = model_dict[model_name[0]](num_classes=100)
-    model.load_state_dict(torch.load(args.path)['model'])
-    model.to('cuda' if torch.cuda.is_available() else 'cpu')
+    # model_name = get_teacher_name(args.path)
+    # model = model_dict[model_name[0]](num_classes=100)
+    model = torch.load(args.path)['model']
+    model.to(CONFIG.DEVICE)
     
     print(f'model path: {args.path}')
     model.eval()

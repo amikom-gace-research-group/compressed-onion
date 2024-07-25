@@ -24,9 +24,11 @@ def train_vanilla(epoch, train_loader, model, criterion, optimizer, opt):
         data_time.update(time.time() - end)
 
         input = input.float()
-        if torch.cuda.is_available():
+        if CONFIG.DEVICE == "cuda":
             input = input.cuda()
             target = target.cuda()
+        else:
+            pass
 
         # ===================forward=====================
         output = model(input)

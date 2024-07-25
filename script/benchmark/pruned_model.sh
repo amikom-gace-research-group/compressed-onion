@@ -8,6 +8,12 @@ models=(
     "vgg19"
 )
 
+methods=(
+    "l1"
+    "l2"
+    "random"
+)
+
 sparcity=(
     "0.1"
     "0.05"
@@ -16,9 +22,11 @@ sparcity=(
 
 for model in "${models[@]}"
 do
-    for num in "${sparcity[@]}"
-    do
-        path="save/models/${model}/${model}_l1_Complete_${num}_pruned.pth"
-        python3 -m benchmark_cifar100 --path "${path}" --save 1
+    for method in "${methods[@]}"
+        for num in "${sparcity[@]}"
+        do
+            path="save/models/${model}/${model}_${method}_Complete_${num}_pruned.pth"
+            python3 -m benchmark_cifar100 --path "${path}" --save 1
+        done
     done
 done
